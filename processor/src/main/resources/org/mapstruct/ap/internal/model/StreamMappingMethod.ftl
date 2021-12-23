@@ -17,8 +17,7 @@
     </#list>
     if ( ${sourceParameter.name} == null ) {
         <#if !mapNullToDefault>
-            <#-- returned target type starts to miss-align here with target handed via param, TODO is this right? -->
-            return<#if returnType.name != "void"> null</#if>;
+            return<#if returnType.name != "void"> <#if existingInstanceMapping>${resultName}<#else>null</#if></#if>;
         <#else>
             <#if resultType.arrayType>
                 <#if existingInstanceMapping>
@@ -55,7 +54,7 @@
         <#if needVarDefine>
             <#assign needVarDefine = false />
             <#-- We create a null array which later will be directly assigned from the stream-->
-            ${resultElementType}[] ${resultName} = null;
+            <@includeModel object=resultElementType/>[] ${resultName} = null;
         </#if>
     <#elseif resultType.iterableType>
         <#if existingInstanceMapping>

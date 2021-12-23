@@ -15,6 +15,7 @@ import org.mapstruct.control.MappingControl;
 import org.mapstruct.factory.Mappers;
 
 import static org.mapstruct.NullValueCheckStrategy.ON_IMPLICIT_CONVERSION;
+import static org.mapstruct.SubclassExhaustiveStrategy.COMPILE_ERROR;
 
 /**
  * Marks an interface or abstract class as a mapper and activates the generation of a implementation of that type via
@@ -203,6 +204,32 @@ public @interface Mapper {
     NullValueMappingStrategy nullValueMappingStrategy() default NullValueMappingStrategy.RETURN_NULL;
 
     /**
+     * The strategy to be applied when {@code null} is passed as source argument value to an {@link IterableMapping} of
+     * this mapper. If unset, the strategy set with {@link #nullValueMappingStrategy()} will be applied. If neither
+     * strategy is configured, the strategy given via {@link MapperConfig#nullValueIterableMappingStrategy()} will be
+     * applied, using {@link NullValueMappingStrategy#RETURN_NULL} by default.
+     *
+     * @since 1.5
+     *
+     * @return The strategy to be applied when {@code null} is passed as source value to an {@link IterableMapping} of
+     * this mapper.
+     */
+    NullValueMappingStrategy nullValueIterableMappingStrategy() default NullValueMappingStrategy.RETURN_NULL;
+
+    /**
+     * The strategy to be applied when {@code null} is passed as source argument value to a {@link MapMapping} of this
+     * mapper. If unset, the strategy set with {@link #nullValueMappingStrategy()} will be applied. If neither strategy
+     * is configured, the strategy given via {@link MapperConfig#nullValueMapMappingStrategy()} will be applied, using
+     * {@link NullValueMappingStrategy#RETURN_NULL} by default.
+     *
+     * @since 1.5
+     *
+     * @return The strategy to be applied when {@code null} is passed as source value to a {@link MapMapping} of this
+     * mapper.
+     */
+    NullValueMappingStrategy nullValueMapMappingStrategy() default NullValueMappingStrategy.RETURN_NULL;
+
+    /**
      * The strategy to be applied when a source bean property is {@code null} or not present. If no strategy is
      * configured, the strategy given via {@link MapperConfig#nullValuePropertyMappingStrategy()} will be applied,
      * {@link NullValuePropertyMappingStrategy#SET_TO_NULL} will be used by default.
@@ -236,6 +263,17 @@ public @interface Mapper {
      * @return strategy how to do null checking
      */
     NullValueCheckStrategy nullValueCheckStrategy() default ON_IMPLICIT_CONVERSION;
+
+    /**
+     * Determines how to handle missing implementation for super classes when using the {@link SubclassMapping}.
+     *
+     * Can be overridden by the one on {@link BeanMapping}, but overrides {@link MapperConfig}.
+     *
+     * @return strategy to handle missing implementation combined with {@link SubclassMappings}.
+     *
+     * @since 1.5
+     */
+    SubclassExhaustiveStrategy subclassExhaustiveStrategy() default COMPILE_ERROR;
 
     /**
      * Determines whether to use field or constructor injection. This is only used on annotated based component models
@@ -319,4 +357,17 @@ public @interface Mapper {
      * @since 1.4
      */
     Class<? extends Exception> unexpectedValueMappingException() default IllegalArgumentException.class;
+
+    /**
+     * Flag indicating whether the addition of a time stamp in the {@code @Generated} annotation should be suppressed.
+     * i.e. not be added.
+     *
+     * The method overrides the flag set in a central configuration set by {@link #config()}
+     * or through an annotation processor option.
+     *
+     * @return whether the addition of a timestamp should be suppressed
+     *
+     * @since 1.5
+     */
+    boolean suppressTimestampInGenerated() default false;
 }

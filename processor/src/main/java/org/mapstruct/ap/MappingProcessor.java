@@ -67,9 +67,9 @@ import static javax.lang.model.element.ElementKind.CLASS;
  * <li>if no error occurred, write out the model into Java source files</li>
  * </ul>
  * <p>
- * For reading annotation attributes, gems as generated with help of the <a
- * href="https://java.net/projects/hickory">Hickory</a> tool are used. These gems allow a comfortable access to
- * annotations and their attributes without depending on their class objects.
+ * For reading annotation attributes, gems as generated with help of <a
+ * href="https://github.com/mapstruct/tools-gem">Gem Tools</a>. These gems allow comfortable access to annotations and
+ * their attributes without depending on their class objects.
  * <p>
  * The creation of Java source files is done using the <a href="http://freemarker.org/"> FreeMarker</a> template engine.
  * Each node of the mapper model has a corresponding FreeMarker template file which provides the Java representation of
@@ -84,6 +84,7 @@ import static javax.lang.model.element.ElementKind.CLASS;
     MappingProcessor.SUPPRESS_GENERATOR_TIMESTAMP,
     MappingProcessor.SUPPRESS_GENERATOR_VERSION_INFO_COMMENT,
     MappingProcessor.UNMAPPED_TARGET_POLICY,
+    MappingProcessor.UNMAPPED_SOURCE_POLICY,
     MappingProcessor.DEFAULT_COMPONENT_MODEL,
     MappingProcessor.DEFAULT_INJECTION_STRATEGY,
     MappingProcessor.VERBOSE
@@ -99,6 +100,7 @@ public class MappingProcessor extends AbstractProcessor {
     protected static final String SUPPRESS_GENERATOR_VERSION_INFO_COMMENT =
         "mapstruct.suppressGeneratorVersionInfoComment";
     protected static final String UNMAPPED_TARGET_POLICY = "mapstruct.unmappedTargetPolicy";
+    protected static final String UNMAPPED_SOURCE_POLICY = "mapstruct.unmappedSourcePolicy";
     protected static final String DEFAULT_COMPONENT_MODEL = "mapstruct.defaultComponentModel";
     protected static final String DEFAULT_INJECTION_STRATEGY = "mapstruct.defaultInjectionStrategy";
     protected static final String ALWAYS_GENERATE_SERVICE_FILE = "mapstruct.alwaysGenerateServicesFile";
@@ -134,11 +136,13 @@ public class MappingProcessor extends AbstractProcessor {
 
     private Options createOptions() {
         String unmappedTargetPolicy = processingEnv.getOptions().get( UNMAPPED_TARGET_POLICY );
+        String unmappedSourcePolicy = processingEnv.getOptions().get( UNMAPPED_SOURCE_POLICY );
 
         return new Options(
             Boolean.valueOf( processingEnv.getOptions().get( SUPPRESS_GENERATOR_TIMESTAMP ) ),
             Boolean.valueOf( processingEnv.getOptions().get( SUPPRESS_GENERATOR_VERSION_INFO_COMMENT ) ),
             unmappedTargetPolicy != null ? ReportingPolicyGem.valueOf( unmappedTargetPolicy.toUpperCase() ) : null,
+            unmappedSourcePolicy != null ? ReportingPolicyGem.valueOf( unmappedSourcePolicy.toUpperCase() ) : null,
             processingEnv.getOptions().get( DEFAULT_COMPONENT_MODEL ),
             processingEnv.getOptions().get( DEFAULT_INJECTION_STRATEGY ),
             Boolean.valueOf( processingEnv.getOptions().get( ALWAYS_GENERATE_SERVICE_FILE ) ),

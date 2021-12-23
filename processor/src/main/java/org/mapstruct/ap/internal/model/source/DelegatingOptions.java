@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.mapstruct.ap.internal.util.ElementUtils;
 
 import org.mapstruct.ap.internal.gem.BuilderGem;
 import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
@@ -20,6 +19,8 @@ import org.mapstruct.ap.internal.gem.NullValueCheckStrategyGem;
 import org.mapstruct.ap.internal.gem.NullValueMappingStrategyGem;
 import org.mapstruct.ap.internal.gem.NullValuePropertyMappingStrategyGem;
 import org.mapstruct.ap.internal.gem.ReportingPolicyGem;
+import org.mapstruct.ap.internal.gem.SubclassExhaustiveStrategyGem;
+import org.mapstruct.ap.internal.util.ElementUtils;
 import org.mapstruct.ap.spi.TypeHierarchyErroneousException;
 
 /**
@@ -67,6 +68,10 @@ public abstract class DelegatingOptions {
         return next.componentModel();
     }
 
+    public boolean suppressTimestampInGenerated() {
+        return next.suppressTimestampInGenerated();
+    }
+
     public MappingInheritanceStrategyGem getMappingInheritanceStrategy() {
         return next.getMappingInheritanceStrategy();
     }
@@ -95,6 +100,18 @@ public abstract class DelegatingOptions {
 
     public NullValueMappingStrategyGem getNullValueMappingStrategy() {
         return next.getNullValueMappingStrategy();
+    }
+
+    public SubclassExhaustiveStrategyGem getSubclassExhaustiveStrategy() {
+        return next.getSubclassExhaustiveStrategy();
+    }
+
+    public NullValueMappingStrategyGem getNullValueIterableMappingStrategy() {
+        return next.getNullValueIterableMappingStrategy();
+    }
+
+    public NullValueMappingStrategyGem getNullValueMapMappingStrategy() {
+        return next.getNullValueMapMappingStrategy();
     }
 
     public BuilderGem getBuilder() {

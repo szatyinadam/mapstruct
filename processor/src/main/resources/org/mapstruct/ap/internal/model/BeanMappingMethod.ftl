@@ -20,10 +20,21 @@
     </#list>
     <#if !mapNullToDefault>
     if ( <#list sourceParametersExcludingPrimitives as sourceParam>${sourceParam.name} == null<#if sourceParam_has_next> && </#if></#list> ) {
-        return<#if returnType.name != "void"> null</#if>;
+        return<#if returnType.name != "void"> <#if existingInstanceMapping>${resultName}<#if finalizerMethod??>.<@includeModel object=finalizerMethod /></#if><#else>null</#if></#if>;
     }
     </#if>
 
+    <#if hasSubclassMappings()>
+        <#list subclassMappings as subclass>
+            <#if subclass_index &gt; 0>else</#if> if (${subclass.sourceArgument} instanceof <@includeModel object=subclass.sourceType/>) {
+                <@includeModel object=subclass.assignment existingInstanceMapping=existingInstanceMapping/>
+            }
+        </#list>
+        else {
+    </#if>
+    <#if isAbstractReturnType()>
+        throw new IllegalArgumentException("Not all subclasses are supported for this mapping. Missing for " + ${subclassMappings[0].sourceArgument}.getClass());
+    <#else>
     <#if !existingInstanceMapping>
         <#if hasConstructorMappings()>
             <#if (sourceParameters?size > 1)>
@@ -119,6 +130,10 @@
     <#else>
         return ${resultName};
     </#if>
+    </#if>
+    </#if>
+    <#if hasSubclassMappings()>
+        }
     </#if>
 }
 <#macro throws>

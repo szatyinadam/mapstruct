@@ -20,6 +20,8 @@ public enum Message {
     // CHECKSTYLE:OFF
     PROCESSING_NOTE( "processing: %s.", Diagnostic.Kind.NOTE ),
     CONFIG_NOTE( "applying mapper configuration: %s.", Diagnostic.Kind.NOTE ),
+    MESSAGE_MOVED_TO_MAPPER_ERROR( "%s Occured at '%s' in '%s'." ),
+    MESSAGE_MOVED_TO_MAPPER_WARNING( "%s Occured at '%s' in '%s'.", Diagnostic.Kind.WARNING ),
 
     BEANMAPPING_CREATE_NOTE( "creating bean mapping method implementation for %s.", Diagnostic.Kind.NOTE ),
     BEANMAPPING_NO_ELEMENTS( "'nullValueMappingStrategy', 'nullValuePropertyMappingStrategy', 'resultType' and 'qualifiedBy' are undefined in @BeanMapping, define at least one of them." ),
@@ -114,6 +116,11 @@ public enum Message {
     ENUMMAPPING_NO_ELEMENTS( "'nameTransformationStrategy', 'configuration' and 'unexpectedValueMappingException' are undefined in @EnumMapping, define at least one of them." ),
     ENUMMAPPING_ILLEGAL_TRANSFORMATION( "Illegal transformation for '%s' EnumTransformationStrategy. Error: '%s'." ),
 
+    SUBCLASSMAPPING_ILLEGAL_SUBCLASS( "Class '%s' is not a subclass of '%s'." ),
+    SUBCLASSMAPPING_NO_VALID_SUPERCLASS( "Could not find a parameter that is a superclass for '%s'." ),
+    SUBCLASSMAPPING_UPDATE_METHODS_NOT_SUPPORTED( "SubclassMapping annotation can not be used for update methods." ),
+    SUBCLASSMAPPING_ILLOGICAL_ORDER( "SubclassMapping annotation for '%s' found after '%s', but all '%s' objects are also instances of '%s'.", Diagnostic.Kind.WARNING ),
+
     LIFECYCLEMETHOD_AMBIGUOUS_PARAMETERS( "Lifecycle method has multiple matching parameters (e. g. same type), in this case please ensure to name the parameters in the lifecycle and mapping method identical. This lifecycle method will not be used for the mapping method '%s'.", Diagnostic.Kind.WARNING),
 
     DECORATOR_NO_SUBTYPE( "Specified decorator type is no subtype of the annotated mapper type." ),
@@ -125,7 +132,7 @@ public enum Message {
     GENERAL_AMBIGUOUS_MAPPING_METHOD( "Ambiguous mapping methods found for mapping %s to %s: %s. See " + FAQ_AMBIGUOUS_URL + " for more info." ),
     GENERAL_AMBIGUOUS_FACTORY_METHOD( "Ambiguous factory methods found for creating %s: %s. See " + FAQ_AMBIGUOUS_URL + " for more info." ),
     GENERAL_AMBIGUOUS_PRESENCE_CHECK_METHOD( "Ambiguous presence check methods found for checking %s: %s. See " + FAQ_AMBIGUOUS_URL + " for more info." ),
-    GENERAL_AMBIGUOUS_CONSTRUCTORS( "Ambiguous constructors found for creating %s. Either declare parameterless constructor or annotate the default constructor with an annotation named @Default." ),
+    GENERAL_AMBIGUOUS_CONSTRUCTORS( "Ambiguous constructors found for creating %s: %s. Either declare parameterless constructor or annotate the default constructor with an annotation named @Default." ),
     GENERAL_CONSTRUCTOR_PROPERTIES_NOT_MATCHING_PARAMETERS( "Incorrect @ConstructorProperties for %s. The size of the @ConstructorProperties does not match the number of constructor parameters" ),
     GENERAL_UNSUPPORTED_DATE_FORMAT_CHECK( "No dateFormat check is supported for types %s, %s" ),
     GENERAL_VALID_DATE( "Given date format \"%s\" is valid.", Diagnostic.Kind.NOTE ),
@@ -187,7 +194,6 @@ public enum Message {
     MAPTOBEANMAPPING_RAW_MAP( "The Map parameter \"%s\" cannot be used for property mapping. It must be typed with Map<String, ???> but it was raw.", Diagnostic.Kind.WARNING ),
     ;
     // CHECKSTYLE:ON
-
 
     private final String description;
     private final Diagnostic.Kind kind;

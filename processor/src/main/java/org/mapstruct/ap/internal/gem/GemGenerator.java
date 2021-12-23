@@ -28,6 +28,8 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 import org.mapstruct.ObjectFactory;
 import org.mapstruct.Qualifier;
+import org.mapstruct.SubclassMapping;
+import org.mapstruct.SubclassMappings;
 import org.mapstruct.TargetType;
 import org.mapstruct.ValueMapping;
 import org.mapstruct.ValueMappings;
@@ -36,7 +38,7 @@ import org.mapstruct.control.MappingControls;
 import org.mapstruct.tools.gem.GemDefinition;
 
 /**
- * Triggers the generation of ge  types using <a href="https://java.net/projects/hickory">Hickory</a>.
+ * Triggers the generation of gem types using <a href="https://github.com/mapstruct/tools-gem">Gem Tools</a>.
  *
  * @author Gunnar Morling
  */
@@ -47,6 +49,8 @@ import org.mapstruct.tools.gem.GemDefinition;
 @GemDefinition(BeanMapping.class)
 @GemDefinition(EnumMapping.class)
 @GemDefinition(MapMapping.class)
+@GemDefinition(SubclassMapping.class)
+@GemDefinition(SubclassMappings.class)
 @GemDefinition(TargetType.class)
 @GemDefinition(MappingTarget.class)
 @GemDefinition(DecoratedWith.class)

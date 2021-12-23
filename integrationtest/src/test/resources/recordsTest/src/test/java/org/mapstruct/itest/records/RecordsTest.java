@@ -5,6 +5,8 @@
  */
 package org.mapstruct.itest.records;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
@@ -46,5 +48,39 @@ public class RecordsTest {
 
         assertThat( value ).isNotNull();
         assertThat( value.value() ).isEqualTo( "Kermit" );
+    }
+
+    @Test
+    public void shouldMapIntoRecordWithList() {
+        Car car = new Car();
+        car.setWheelPositions( Arrays.asList( new WheelPosition( "left" ) ) );
+
+        CarDto carDto = CarAndWheelMapper.INSTANCE.carDtoFromCar(car);
+
+        assertThat( carDto ).isNotNull();
+        assertThat( carDto.wheelPositions() )
+            .containsExactly( "left" );
+    }
+
+    @Test
+    public void shouldMapMemberRecord() {
+        MemberEntity member = MemberMapper.INSTANCE.fromRecord( new MemberDto( true, false ) );
+
+        assertThat( member ).isNotNull();
+        assertThat( member.getIsActive() ).isTrue();
+        assertThat( member.getPremium() ).isFalse();
+    }
+
+    @Test
+    public void shouldMapIntoMemberRecord() {
+        MemberEntity entity = new MemberEntity();
+        entity.setIsActive( false );
+        entity.setPremium( true );
+
+        MemberDto value = MemberMapper.INSTANCE.toRecord( entity );
+
+        assertThat( value ).isNotNull();
+        assertThat( value.isActive() ).isEqualTo( false );
+        assertThat( value.premium() ).isEqualTo( true );
     }
 }

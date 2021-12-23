@@ -9,9 +9,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.mapstruct.ap.internal.util.ElementUtils;
 
-import org.mapstruct.ap.internal.option.Options;
 import org.mapstruct.ap.internal.gem.BuilderGem;
 import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.gem.InjectionStrategyGem;
@@ -21,6 +19,9 @@ import org.mapstruct.ap.internal.gem.NullValueCheckStrategyGem;
 import org.mapstruct.ap.internal.gem.NullValueMappingStrategyGem;
 import org.mapstruct.ap.internal.gem.NullValuePropertyMappingStrategyGem;
 import org.mapstruct.ap.internal.gem.ReportingPolicyGem;
+import org.mapstruct.ap.internal.gem.SubclassExhaustiveStrategyGem;
+import org.mapstruct.ap.internal.option.Options;
+import org.mapstruct.ap.internal.util.ElementUtils;
 
 public class DefaultOptions extends DelegatingOptions {
 
@@ -63,6 +64,9 @@ public class DefaultOptions extends DelegatingOptions {
 
     @Override
     public ReportingPolicyGem unmappedSourcePolicy() {
+        if ( options.getUnmappedSourcePolicy() != null ) {
+            return options.getUnmappedSourcePolicy();
+        }
         return ReportingPolicyGem.valueOf( mapper.unmappedSourcePolicy().getDefaultValue() );
     }
 
@@ -77,6 +81,13 @@ public class DefaultOptions extends DelegatingOptions {
             return options.getDefaultComponentModel();
         }
         return mapper.componentModel().getDefaultValue();
+    }
+
+    public boolean suppressTimestampInGenerated() {
+        if ( mapper.suppressTimestampInGenerated().hasValue() ) {
+            return mapper.suppressTimestampInGenerated().getValue();
+        }
+        return options.isSuppressGeneratorTimestamp();
     }
 
     @Override
@@ -114,6 +125,18 @@ public class DefaultOptions extends DelegatingOptions {
 
     public NullValueMappingStrategyGem getNullValueMappingStrategy() {
         return NullValueMappingStrategyGem.valueOf( mapper.nullValueMappingStrategy().getDefaultValue() );
+    }
+
+    public SubclassExhaustiveStrategyGem getSubclassExhaustiveStrategy() {
+        return SubclassExhaustiveStrategyGem.valueOf( mapper.subclassExhaustiveStrategy().getDefaultValue() );
+    }
+
+    public NullValueMappingStrategyGem getNullValueIterableMappingStrategy() {
+        return NullValueMappingStrategyGem.valueOf( mapper.nullValueIterableMappingStrategy().getDefaultValue() );
+    }
+
+    public NullValueMappingStrategyGem getNullValueMapMappingStrategy() {
+        return NullValueMappingStrategyGem.valueOf( mapper.nullValueMapMappingStrategy().getDefaultValue() );
     }
 
     public BuilderGem getBuilder() {
