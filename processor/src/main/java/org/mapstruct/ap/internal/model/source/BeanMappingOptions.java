@@ -34,6 +34,7 @@ import org.mapstruct.tools.gem.GemValue;
 public class BeanMappingOptions extends DelegatingOptions {
 
     private final SelectionParameters selectionParameters;
+    private final List<String> ignoreUnmappedSourceProperties;
     private final BeanMappingGem beanMapping;
 
     /**
@@ -46,10 +47,15 @@ public class BeanMappingOptions extends DelegatingOptions {
     public static BeanMappingOptions forInheritance(BeanMappingOptions beanMapping) {
         BeanMappingOptions options =  new BeanMappingOptions(
             SelectionParameters.forInheritance( beanMapping.selectionParameters ),
+            Collections.emptyList(),
             beanMapping.beanMapping,
             beanMapping
         );
         return options;
+    }
+
+    public static BeanMappingOptions empty(DelegatingOptions delegatingOptions) {
+        return new BeanMappingOptions( null, Collections.emptyList(), null, delegatingOptions );
     }
 
     public static BeanMappingOptions getInstanceOn(BeanMappingGem beanMapping, MapperOptions mapperOptions,
@@ -57,8 +63,7 @@ public class BeanMappingOptions extends DelegatingOptions {
                                                    TypeUtils typeUtils, TypeFactory typeFactory
     ) {
         if ( beanMapping == null || !isConsistent( beanMapping, method, messager ) ) {
-            BeanMappingOptions options = new BeanMappingOptions( null, null, mapperOptions );
-            return options;
+            return empty( mapperOptions );
         }
 
         Objects.requireNonNull( method );
@@ -77,6 +82,7 @@ public class BeanMappingOptions extends DelegatingOptions {
         //TODO Do we want to add the reporting policy to the BeanMapping as well? To give more granular support?
         BeanMappingOptions options = new BeanMappingOptions(
             selectionParameters,
+            beanMapping.ignoreUnmappedSourceProperties().get(),
             beanMapping,
             mapperOptions
         );
@@ -86,6 +92,7 @@ public class BeanMappingOptions extends DelegatingOptions {
     private static boolean isConsistent(BeanMappingGem gem, ExecutableElement method,
                                         FormattingMessager messager) {
         if ( !gem.resultType().hasValue()
+            && !gem.mappingControl().hasValue()
             && !gem.qualifiedBy().hasValue()
             && !gem.qualifiedByName().hasValue()
             && !gem.ignoreUnmappedSourceProperties().hasValue()
@@ -104,10 +111,12 @@ public class BeanMappingOptions extends DelegatingOptions {
     }
 
     private BeanMappingOptions(SelectionParameters selectionParameters,
+                               List<String> ignoreUnmappedSourceProperties,
                                BeanMappingGem beanMapping,
                                DelegatingOptions next) {
         super( next );
         this.selectionParameters = selectionParameters;
+        this.ignoreUnmappedSourceProperties = ignoreUnmappedSourceProperties;
         this.beanMapping = beanMapping;
     }
 
@@ -188,9 +197,7 @@ public class BeanMappingOptions extends DelegatingOptions {
     }
 
     public List<String> getIgnoreUnmappedSourceProperties() {
-        return Optional.ofNullable( beanMapping ).map( BeanMappingGem::ignoreUnmappedSourceProperties )
-            .map( GemValue::get )
-            .orElse( Collections.emptyList() );
+        return ignoreUnmappedSourceProperties;
     }
 
     public AnnotationMirror getMirror() {

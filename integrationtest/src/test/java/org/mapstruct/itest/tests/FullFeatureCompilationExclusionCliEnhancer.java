@@ -28,6 +28,15 @@ public final class FullFeatureCompilationExclusionCliEnhancer implements Process
         additionalExcludes.add( "org/mapstruct/ap/test/bugs/_1801/*.java" );
 
         switch ( currentJreVersion ) {
+            case JAVA_8:
+                additionalExcludes.add( "org/mapstruct/ap/test/injectionstrategy/cdi/**/*.java" );
+                additionalExcludes.add( "org/mapstruct/ap/test/injectionstrategy/jakarta_cdi/**/*.java" );
+                additionalExcludes.add( "org/mapstruct/ap/test/annotatewith/deprecated/jdk11/*.java" );
+                if ( processorType == ProcessorTest.ProcessorType.ECLIPSE_JDT ) {
+                    additionalExcludes.add(
+                        "org/mapstruct/ap/test/selection/methodgenerics/wildcards/LifecycleIntersectionMapper.java" );
+                }
+                break;
             case JAVA_9:
                 // TODO find out why this fails:
                 additionalExcludes.add( "org/mapstruct/ap/test/collection/wildcard/BeanMapper.java" );

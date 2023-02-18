@@ -157,6 +157,7 @@ public class BeanMappingMethod extends NormalTypeMappingMethod {
             return this;
         }
 
+        @Override
         public BeanMappingMethod build() {
 
             BeanMappingOptions beanMapping = method.getOptions().getBeanMapping();
@@ -361,6 +362,7 @@ public class BeanMappingMethod extends NormalTypeMappingMethod {
 
             return new BeanMappingMethod(
                 method,
+                getMethodAnnotations(),
                 existingVariableNames,
                 propertyMappings,
                 factoryMethod,
@@ -397,15 +399,13 @@ public class BeanMappingMethod extends NormalTypeMappingMethod {
                 "SubclassMapping for " + sourceType.getFullyQualifiedName() );
             SelectionCriteria criteria =
                 SelectionCriteria
-                                 .forMappingMethods(
+                                 .forSubclassMappingMethods(
                                      new SelectionParameters(
                                          Collections.emptyList(),
                                          Collections.emptyList(),
                                          subclassMappingOptions.getTarget(),
                                          ctx.getTypeUtils() ).withSourceRHS( rightHandSide ),
-                                     null,
-                                     null,
-                                     false );
+                                     subclassMappingOptions.getMappingControl( ctx.getElementUtils() ) );
             Assignment assignment = ctx
                                    .getMappingResolver()
                                    .getTargetAssignment(
@@ -703,6 +703,14 @@ public class BeanMappingMethod extends NormalTypeMappingMethod {
         }
 
         private ConstructorAccessor getConstructorAccessor(Type type) {
+            if ( type.isAbstract() ) {
+                // We cannot construct abstract classes.
+                // Usually we won't reach here,
+                // but if SubclassMapping is used with SubclassExhaustiveStrategy#RUNTIME_EXCEPTION
+                // then we will still generate the code.
+                // We shouldn't generate anything for those abstract types
+                return null;
+            }
 
             if ( type.isRecord() ) {
                 // If the type is a record then just get the record components and use then
@@ -1692,6 +1700,7 @@ public class BeanMappingMethod extends NormalTypeMappingMethod {
 
     //CHECKSTYLE:OFF
     private BeanMappingMethod(Method method,
+                              List<Annotation> annotations,
                               Collection<String> existingVariableNames,
                               List<PropertyMapping> propertyMappings,
                               MethodReference factoryMethod,
@@ -1705,6 +1714,7 @@ public class BeanMappingMethod extends NormalTypeMappingMethod {
                               List<SubclassMapping> subclassMappings) {
         super(
             method,
+            annotations,
             existingVariableNames,
             factoryMethod,
             mapNullToDefault,
@@ -1782,7 +1792,7 @@ public class BeanMappingMethod extends NormalTypeMappingMethod {
     }
 
     public boolean isAbstractReturnType() {
-        return getFactoryMethod() == null && !hasConstructorMappings() && returnTypeToConstruct != null
+        return getFactoryMethod() == null && returnTypeToConstruct != null
             && returnTypeToConstruct.isAbstract();
     }
 

@@ -32,11 +32,14 @@ public class MethodSelectors {
             new TypeSelector( typeFactory, messager ),
             new QualifierSelector( typeUtils, elementUtils ),
             new TargetTypeSelector( typeUtils ),
-            new XmlElementDeclSelector( typeUtils ),
+            new JavaxXmlElementDeclSelector( typeUtils ),
+            new JakartaXmlElementDeclSelector( typeUtils ),
             new InheritanceSelector(),
             new CreateOrUpdateSelector(),
             new SourceRhsSelector(),
-            new FactoryParameterSelector() );
+            new FactoryParameterSelector(),
+            new MostSpecificResultTypeSelector()
+        );
     }
 
     /**

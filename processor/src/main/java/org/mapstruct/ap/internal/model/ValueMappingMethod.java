@@ -6,6 +6,7 @@
 package org.mapstruct.ap.internal.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -41,6 +42,7 @@ import static org.mapstruct.ap.internal.util.Collections.first;
  */
 public class ValueMappingMethod extends MappingMethod {
 
+    private final List<Annotation> annotations;
     private final List<MappingEntry> valueMappings;
     private final MappingEntry defaultTarget;
     private final MappingEntry nullTarget;
@@ -116,9 +118,23 @@ public class ValueMappingMethod extends MappingMethod {
                 LifecycleMethodResolver.beforeMappingMethods( method, selectionParameters, ctx, existingVariables );
             List<LifecycleCallbackMethodReference> afterMappingMethods =
                 LifecycleMethodResolver.afterMappingMethods( method, selectionParameters, ctx, existingVariables );
+            List<Annotation> annotations;
+            if ( method instanceof ForgedMethod ) {
+                annotations = Collections.emptyList();
+            }
+            else {
+                annotations = new ArrayList<>();
+                AdditionalAnnotationsBuilder additionalAnnotationsBuilder =
+                    new AdditionalAnnotationsBuilder(
+                        ctx.getElementUtils(),
+                        ctx.getTypeFactory(),
+                        ctx.getMessager() );
 
+                annotations.addAll( additionalAnnotationsBuilder.getProcessedAnnotations( method.getExecutable() ) );
+            }
             // finally return a mapping
             return new ValueMappingMethod( method,
+                annotations,
                 mappingEntries,
                 valueMappings.nullValueTarget,
                 valueMappings.defaultTargetValue,
@@ -532,6 +548,7 @@ public class ValueMappingMethod extends MappingMethod {
     }
 
     private ValueMappingMethod(Method method,
+                               List<Annotation> annotations,
                                List<MappingEntry> enumMappings,
                                String nullTarget,
                                String defaultTarget,
@@ -544,6 +561,7 @@ public class ValueMappingMethod extends MappingMethod {
         this.defaultTarget = new MappingEntry( null, defaultTarget != null ? defaultTarget : THROW_EXCEPTION);
         this.unexpectedValueMappingException = unexpectedValueMappingException;
         this.overridden = method.overridesMethod();
+        this.annotations = annotations;
     }
 
     @Override
@@ -556,7 +574,9 @@ public class ValueMappingMethod extends MappingMethod {
                 importTypes.addAll( unexpectedValueMappingException.getImportTypes() );
             }
         }
-
+        for ( Annotation annotation : annotations ) {
+            importTypes.addAll( annotation.getImportTypes() );
+        }
         return importTypes;
     }
 
@@ -588,6 +608,10 @@ public class ValueMappingMethod extends MappingMethod {
 
     public boolean isOverridden() {
         return overridden;
+    }
+
+    public List<Annotation> getAnnotations() {
+        return annotations;
     }
 
     public static class MappingEntry {

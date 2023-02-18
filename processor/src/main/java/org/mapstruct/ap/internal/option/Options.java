@@ -5,6 +5,7 @@
  */
 package org.mapstruct.ap.internal.option;
 
+import org.mapstruct.ap.internal.gem.NullValueMappingStrategyGem;
 import org.mapstruct.ap.internal.gem.ReportingPolicyGem;
 
 /**
@@ -21,13 +22,23 @@ public class Options {
     private final boolean alwaysGenerateSpi;
     private final String defaultComponentModel;
     private final String defaultInjectionStrategy;
+    private final boolean disableBuilders;
     private final boolean verbose;
+    private final NullValueMappingStrategyGem nullValueIterableMappingStrategy;
+    private final NullValueMappingStrategyGem nullValueMapMappingStrategy;
 
+    //CHECKSTYLE:OFF
     public Options(boolean suppressGeneratorTimestamp, boolean suppressGeneratorVersionComment,
                    ReportingPolicyGem unmappedTargetPolicy,
                    ReportingPolicyGem unmappedSourcePolicy,
                    String defaultComponentModel, String defaultInjectionStrategy,
-                   boolean alwaysGenerateSpi, boolean verbose) {
+                   boolean alwaysGenerateSpi,
+                   boolean disableBuilders,
+                   boolean verbose,
+                   NullValueMappingStrategyGem nullValueIterableMappingStrategy,
+                   NullValueMappingStrategyGem nullValueMapMappingStrategy
+                   ) {
+        //CHECKSTYLE:ON
         this.suppressGeneratorTimestamp = suppressGeneratorTimestamp;
         this.suppressGeneratorVersionComment = suppressGeneratorVersionComment;
         this.unmappedTargetPolicy = unmappedTargetPolicy;
@@ -35,7 +46,10 @@ public class Options {
         this.defaultComponentModel = defaultComponentModel;
         this.defaultInjectionStrategy = defaultInjectionStrategy;
         this.alwaysGenerateSpi = alwaysGenerateSpi;
+        this.disableBuilders = disableBuilders;
         this.verbose = verbose;
+        this.nullValueIterableMappingStrategy = nullValueIterableMappingStrategy;
+        this.nullValueMapMappingStrategy = nullValueMapMappingStrategy;
     }
 
     public boolean isSuppressGeneratorTimestamp() {
@@ -66,7 +80,19 @@ public class Options {
         return alwaysGenerateSpi;
     }
 
+    public boolean isDisableBuilders() {
+        return disableBuilders;
+    }
+
     public boolean isVerbose() {
         return verbose;
+    }
+
+    public NullValueMappingStrategyGem getNullValueIterableMappingStrategy() {
+        return nullValueIterableMappingStrategy;
+    }
+
+    public NullValueMappingStrategyGem getNullValueMapMappingStrategy() {
+        return nullValueMapMappingStrategy;
     }
 }

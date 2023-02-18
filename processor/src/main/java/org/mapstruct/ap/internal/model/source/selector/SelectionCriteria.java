@@ -6,6 +6,7 @@
 package org.mapstruct.ap.internal.model.source.selector;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.type.TypeMirror;
@@ -26,6 +27,7 @@ public class SelectionCriteria {
     private final String targetPropertyName;
     private final TypeMirror qualifyingResultType;
     private final SourceRHS sourceRHS;
+    private boolean ignoreQualifiers = false;
     private Type type;
     private final boolean allowDirect;
     private final boolean allowConversion;
@@ -67,6 +69,14 @@ public class SelectionCriteria {
     }
 
     /**
+     *
+     * @return {@code true} if only mapping methods should be selected
+     */
+    public boolean isForMapping() {
+        return type == null || type == Type.PREFER_UPDATE_MAPPING;
+    }
+
+    /**
      * @return true if factory methods should be selected, false otherwise.
      */
     public boolean isObjectFactoryRequired() {
@@ -87,12 +97,16 @@ public class SelectionCriteria {
         return type == Type.PRESENCE_CHECK;
     }
 
+    public void setIgnoreQualifiers(boolean ignoreQualifiers) {
+        this.ignoreQualifiers = ignoreQualifiers;
+    }
+
     public List<TypeMirror> getQualifiers() {
-        return qualifiers;
+        return ignoreQualifiers ? Collections.emptyList() : qualifiers;
     }
 
     public List<String> getQualifiedByNames() {
-        return qualifiedByNames;
+        return ignoreQualifiers ? Collections.emptyList() : qualifiedByNames;
     }
 
     public String getTargetPropertyName() {
@@ -135,6 +149,10 @@ public class SelectionCriteria {
         return allow2Steps;
     }
 
+    public boolean isSelfAllowed() {
+        return type != Type.SELF_NOT_ALLOWED;
+    }
+
     public static SelectionCriteria forMappingMethods(SelectionParameters selectionParameters,
                                                       MappingControl mappingControl,
                                                       String targetPropertyName, boolean preferUpdateMapping) {
@@ -159,10 +177,16 @@ public class SelectionCriteria {
         return new SelectionCriteria( selectionParameters, null, null, Type.PRESENCE_CHECK );
     }
 
+    public static SelectionCriteria forSubclassMappingMethods(SelectionParameters selectionParameters,
+        MappingControl mappingControl) {
+        return new SelectionCriteria( selectionParameters, mappingControl, null, Type.SELF_NOT_ALLOWED );
+    }
+
     public enum Type {
         PREFER_UPDATE_MAPPING,
         OBJECT_FACTORY,
         LIFECYCLE_CALLBACK,
         PRESENCE_CHECK,
+        SELF_NOT_ALLOWED,
     }
 }

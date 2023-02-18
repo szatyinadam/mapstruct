@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -29,6 +28,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -113,9 +113,9 @@ public class Type extends ModelElement implements Comparable<Type> {
     private List<Accessor> setters = null;
     private List<Accessor> adders = null;
     private List<Accessor> alternativeTargetAccessors = null;
-    private Map<String, Accessor> constructorAccessors = null;
 
     private Type boundingBase = null;
+    private List<Type> boundTypes = null;
 
     private Type boxedEquivalent = null;
 
@@ -183,8 +183,18 @@ public class Type extends ModelElement implements Comparable<Type> {
 
         this.loggingVerbose = loggingVerbose;
 
-        this.topLevelType = topLevelType( this.typeElement, this.typeFactory );
-        this.nameWithTopLevelTypeName = nameWithTopLevelTypeName( this.typeElement );
+        TypeElement typeElementForTopLevel;
+        if ( Boolean.TRUE.equals( isToBeImported ) ) {
+            // If the is to be imported is explicitly set to true then we shouldn't look for the top level type
+            typeElementForTopLevel = null;
+        }
+        else {
+            // The top level type for an array type is the top level type of the component type
+            typeElementForTopLevel =
+                this.componentType == null ? this.typeElement : this.componentType.getTypeElement();
+        }
+        this.topLevelType = topLevelType( typeElementForTopLevel, this.typeFactory );
+        this.nameWithTopLevelTypeName = nameWithTopLevelTypeName( typeElementForTopLevel, this.name );
     }
     //CHECKSTYLE:ON
 
@@ -220,11 +230,21 @@ public class Type extends ModelElement implements Comparable<Type> {
      * (if the top level type is important, otherwise the fully-qualified name.
      */
     public String createReferenceName() {
-        if ( isToBeImported() || shouldUseSimpleName() ) {
+        if ( isToBeImported() ) {
+            // isToBeImported() returns true for arrays.
+            // Therefore, we need to check the top level type when creating the reference
+            if ( isTopLevelTypeToBeImported() ) {
+                return nameWithTopLevelTypeName != null ? nameWithTopLevelTypeName : name;
+            }
+
             return name;
         }
 
-        if ( isTopLevelTypeToBeImported() && nameWithTopLevelTypeName != null ) {
+        if ( shouldUseSimpleName() ) {
+            return name;
+        }
+
+        if ( isTopLevelTypeToBeImported() && nameWithTopLevelTypeName != null) {
             return nameWithTopLevelTypeName;
         }
 
@@ -334,6 +354,10 @@ public class Type extends ModelElement implements Comparable<Type> {
 
     public boolean isTypeVar() {
         return (typeMirror.getKind() == TypeKind.TYPEVAR);
+    }
+
+    public boolean isIntersection() {
+        return typeMirror.getKind() == TypeKind.INTERSECTION;
     }
 
     public boolean isJavaLangType() {
@@ -763,6 +787,13 @@ public class Type extends ModelElement implements Comparable<Type> {
                 if ( adderMethod != null ) {
                     // an adder has been found (according strategy) so overrule current choice.
                     candidate = adderMethod;
+                }
+
+                if ( cmStrategy == CollectionMappingStrategyGem.TARGET_IMMUTABLE
+                    && candidate.getAccessorType() == AccessorType.GETTER ) {
+                    // If the collection mapping strategy is target immutable
+                    // then the getter method cannot be used as a setter
+                    continue;
                 }
             }
             else if ( candidate.getAccessorType() == AccessorType.FIELD  && ( Executables.isFinal( candidate ) ||
@@ -1246,6 +1277,29 @@ public class Type extends ModelElement implements Comparable<Type> {
         return boundingBase;
     }
 
+    public List<Type> getTypeBounds() {
+        if ( this.boundTypes != null ) {
+            return boundTypes;
+        }
+        Type bound = getTypeBound();
+        if ( bound == null ) {
+            this.boundTypes = Collections.emptyList();
+        }
+        else if ( !bound.isIntersection() ) {
+            this.boundTypes = Collections.singletonList( bound );
+        }
+        else {
+            List<? extends TypeMirror> bounds = ( (IntersectionType) bound.typeMirror ).getBounds();
+            this.boundTypes = new ArrayList<>( bounds.size() );
+            for ( TypeMirror mirror : bounds ) {
+                boundTypes.add( typeFactory.getType( mirror ) );
+            }
+        }
+
+        return this.boundTypes;
+
+    }
+
     public boolean hasAccessibleConstructor() {
         if ( hasAccessibleConstructor == null ) {
             hasAccessibleConstructor = false;
@@ -1568,16 +1622,16 @@ public class Type extends ModelElement implements Comparable<Type> {
         return trimmedClassName;
     }
 
-    private static String nameWithTopLevelTypeName(TypeElement element) {
+    private static String nameWithTopLevelTypeName(TypeElement element, String name) {
         if ( element == null ) {
             return null;
         }
         if ( !element.getNestingKind().isNested() ) {
-            return element.getSimpleName().toString();
+            return name;
         }
 
         Deque<CharSequence> elements = new ArrayDeque<>();
-        elements.addFirst( element.getSimpleName() );
+        elements.addFirst( name );
         Element parent = element.getEnclosingElement();
         while ( parent != null && parent.getKind() != ElementKind.PACKAGE ) {
             elements.addFirst( parent.getSimpleName() );
@@ -1601,6 +1655,10 @@ public class Type extends ModelElement implements Comparable<Type> {
             parent = parent.getEnclosingElement();
         }
         return parent == null ? null : typeFactory.getType( parent.asType() );
+    }
+
+    public boolean isEnumSet() {
+        return "java.util.EnumSet".equals( getFullyQualifiedName() );
     }
 
 }
